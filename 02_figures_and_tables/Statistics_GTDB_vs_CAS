@@ -1,0 +1,263 @@
+# Statistics on GTDB genomes and different strains and the contribution of our work
+
+The table will be organized in two sections: genomes and strains.  For S. aureus and S. pneumoniae we are going to show the number of strains as STs, for the rest, as SCs. We are doing this because we did not profile the entire GTDB database for SCs with these taxa, but we did for STs (computation of STs is much faster than SCs, we could not afford to do it for all the GTDB genomes of these taxa).
+
+The files of interest are:
+- `/12_CAS/6_ST/saureus_231_CAS_14959_public_ST_agr_spa_sccmec.csv`: STs of S. aureus in GTDB (all genomes!) and CAS
+- `/12_CAS/6_ST/spneumoniae_46_CAS_8895_public_mlst_capsular_serotype.csv`: STs of S. pneumoniae in GTDB (all genomes!) and CAS
+- `/01_CAS/strain_scan/database/pigrum/pigrum_strainscan_db/Tree_database/hclsMap_95_recls.txt`: SCs of D. pigrum in GTDB and CAS
+- `/01_CAS/strain_scan/database/catarrhalis/catarrhalis_strainscan_db/Tree_database/hclsMap_95_recls.txt`: SCs of M. catarrhalis in GTDB and CAS
+- `/01_CAS/strain_scan/database/pseudodiphtheriticum/pseudodiphtheriticum_strainscan_db/Tree_database/hclsMap_95_recls.txt`: SCs of C. pseudodiphtheriticum in GTDB and CAS
+- `/01_CAS/strain_scan/database/accolens/accolens_strainscan_db/Tree_database/hclsMap_95_recls.txt`: SCs of C. accolens in GTDB and CAS
+- `/01_CAS/strain_scan/database/agalactiae/agalactiae_strainscan_db/Tree_database/hclsMap_95_recls.txt`: SCs of S. agalactiae in GTDB and CAS
+- `/01_CAS/strain_scan/database/propinquum/propinquum_strainscan_db/Tree_database/hclsMap_95_recls.txt`: SCs of C. propinquum in GTDB and CAS
+- `/01_CAS/strain_scan/database/nonliquefaciens/nonliquefaciens_strainscan_db/Tree_database/hclsMap_95_recls.txt`: SCs of M. nonliquefaciens in GTDB and CAS
+- `/01_CAS/strain_scan/database/rothia/rothia_strainscan_db/Tree_database/hclsMap_95_recls.txt`: SCs of R. sp902373285 in GTDB and CAS
+- `/01_CAS/strain_scan/database/nonliquefaciens/nonliquefaciens_strainscan_db/Tree_database/hclsMap_95_recls.txt`: SCs of M. nonliquefaciens in GTDB and CAS
+- `/01_CAS/strain_scan/database/mitis_relaxed/mitis_relaxed_strainscan_db/Tree_database/hclsMap_95_recls.txt`: SCs of S. mitis_relaxed in GTDB and CAS
+
+PS: database for S. mitis was done including any GTDB alphabetic suffix, e.g., S. mitis_BM, S. mitis_BA, S. mitis_AC (n=190) 
+
+Information for SCs was already extracted from the hclsMap_95_recls.txt files and is in the file `/06_figure2_tableS5_tableS6/06_tableS5.csv`. Information for STs is in the two csv files mentioned above.
+
+The file `/01_tableS1/01_tableS1.csv` has compiled information on the number of genomes from CAS for each species.
+
+The file with more information on the GTDB genomes is the `/databases/GTDB/bac120_metadata_r214.tsv`.
+
+```R
+# Load necessary libraries
+library(tidyverse)
+
+# Improve console readability
+options(width = 200, scipen = 999)
+
+############
+# Compute the number of genomes section
+###########
+
+# Load the GTDB metadata
+bac120 <- read.delim("/databases/GTDB/bac120_metadata_r214.tsv")
+
+# Extract species information from the gtdb_taxonomy column
+bac120 <- bac120 %>% mutate(Species = gsub(".*;s__(.*)","\\1", gtdb_taxonomy))
+
+# List of taxa of interest
+Smitis <- bac120 %>% filter(grepl("s__Streptococcus mitis", gtdb_taxonomy)) %>% pull(Species) %>% unique()
+length(Smitis) # 56 S. mitis species in GTDB, including all the alphabetic suffixes (e.g., S. mitis_BM, S. mitis_BA, S. mitis_AC, etc.)
+selected_species <- c(Smitis, "Staphylococcus aureus", "Streptococcus pneumoniae", "Dolosigranulum pigrum", "Moraxella catarrhalis", "Corynebacterium pseudodiphtheriticum", "Corynebacterium accolens", "Streptococcus agalactiae", "Corynebacterium propinquum", "Moraxella nonliquefaciens", "Rothia sp902373285")
+
+# Filter for the taxa of interest
+bac120_filt <- bac120 %>% filter(Species %in% selected_species)
+
+# Modify Species column, S. mitis species will be renamed as S. mitis_relaxed, to make it clear that we are including all the alphabetic suffixes in GTDB for this species
+bac120_filt <- bac120_filt %>% mutate(Species = gsub("Streptococcus mitis.*","S. mitis relaxed", Species))
+
+# Count the number of genomes for each species
+genome_counts_gtdb <- bac120_filt %>% group_by(Species) %>% summarise(Genomes = n()) %>% arrange(desc(Genomes))
+
+genome_counts_gtdb
+#    Species                              Genomes
+#  1 Staphylococcus aureus                  14959
+#  2 Streptococcus pneumoniae                8895
+#  3 Streptococcus agalactiae                1635
+#  4 Moraxella catarrhalis                    208
+#  5 S. mitis relaxed                         190
+#  6 Dolosigranulum pigrum                     33
+#  7 Corynebacterium accolens                  16
+#  8 Corynebacterium propinquum                16
+#  9 Corynebacterium pseudodiphtheriticum      16
+# 10 Rothia sp902373285                         8
+# 11 Moraxella nonliquefaciens                  6
+
+# Count the number of MAG-only genomes for each species
+bac120_filt$ncbi_genome_category %>% table()
+# derived from environmental sample           derived from metagenome                              none 
+#                                 2                                33                             25947 
+# It is not worth to report number of MAG-only genomes, most of them come from isolated strains
+
+bac120_filt %>% filter(ncbi_genome_category != "none") %>% group_by(Species) %>% summarise(MAG_only_genomes = n()) %>% arrange(desc(MAG_only_genomes))
+#   Species                    MAG_only_genomes
+# 1 S. mitis relaxed                         14
+# 2 Rothia sp902373285                        7 --> For this species is worth mentioning that most of the genomes are MAGs, only 1 genome is from an isolate
+# 3 Staphylococcus aureus                     6
+# 4 Streptococcus agalactiae                  4
+# 5 Corynebacterium accolens                  2
+# 6 Corynebacterium propinquum                1
+# 7 Dolosigranulum pigrum                     1
+
+# Ok, Let's add the number of genomes from CAS so we can calculate contribution 
+genome_counts_cas <- read.csv("/CAS_2025/01_tableS1/01_tableS1.csv") %>%
+  filter(Retained.for.Analysis. == "Yes") %>%
+  mutate(Species = gsub(".*;s__(.*)","\\1", Taxonomy.GTDB.r214)) %>%
+  filter(Species %in% selected_species) %>%
+  mutate(Species = gsub("Streptococcus mitis.*","S. mitis relaxed", Species)) %>%
+  group_by(Species) %>% 
+  summarise(CAS_genomes = n()) %>% arrange(desc(CAS_genomes))
+
+# Merge GTDB and CAS genome counts
+# Increase_fold = after adding CAS genomes, how many times larger is the GTDB genome set for this species?
+genome_counts <- genome_counts_gtdb %>%
+  left_join(genome_counts_cas, by = "Species") %>%
+  mutate(Total_genomes = Genomes + CAS_genomes, Increase_fold = round(Total_genomes / Genomes, 2)) %>%
+  arrange(desc(Increase_fold))
+
+genome_counts
+#    Species                              Genomes CAS_genomes Total_genomes Increase_fold
+#  1 Corynebacterium pseudodiphtheriticum      16          96           112          7   
+#  2 Moraxella nonliquefaciens                  6          19            25          4.17
+#  3 Rothia sp902373285                         8          22            30          3.75
+#  4 Dolosigranulum pigrum                     33          58            91          2.76
+#  5 Corynebacterium accolens                  16          26            42          2.62
+#  6 Corynebacterium propinquum                16          24            40          2.5 
+#  7 Moraxella catarrhalis                    208         165           373          1.79
+#  8 S. mitis relaxed                         190          40           230          1.21
+#  9 Staphylococcus aureus                  14959         231         15190          1.02
+# 10 Streptococcus pneumoniae                8895          46          8941          1.01
+# 11 Streptococcus agalactiae                1635          23          1658          1.01
+
+############
+# Compute the number of strains (STs or SCs) section
+###########
+
+# Read the file with the number of SCs 
+strain_sc <- read.csv("/CAS_2025/06_figure2_tableS5_tableS6/06_tableS5.csv")  
+
+head(strain_sc, 2)
+#                    Species Cluster.ID Cluster.Size Cluster.With.CAS       Genomes
+# 1 Corynebacterium accolens         C1            1            FALSE GCA_000478095
+# 2 Corynebacterium accolens         C2            1            FALSE GCA_000478135
+
+# Check on the number of genomes
+strain_sc %>%
+group_by(Species) %>%
+summarise(Cluster.Size_total = sum(Cluster.Size)) %>%
+arrange(desc(Cluster.Size_total))
+#    Species                              Cluster.Size_total
+#  1 Streptococcus agalactiae                           1658
+#  2 Streptococcus pneumoniae                           1480 --> as I said, it is a different number because we filtered it
+#  3 Staphylococcus aureus                              1479 --> as I said, it is a different number because we filtered it
+#  4 Moraxella catarrhalis                               373
+#  5 Streptococcus mitis                                 230
+#  6 Corynebacterium pseudodiphtheriticum                112
+#  7 Dolosigranulum pigrum                                91
+#  8 Corynebacterium accolens                             42
+#  9 Corynebacterium propinquum                           40
+# 10 Rothia sp902373285                                   30
+# 11 Moraxella nonliquefaciens                            25
+
+# We can use the Cluster.With.CAS column to determine which SCs are present in CAS and which are not, and then calculate the number of SCs only with GTDB, the number of SCs in CAS, and the increase fold.
+# Create a new column to indicate if the SC is only in GTDB, only in CAS, or in both
+strain_sc <- strain_sc %>%
+  mutate(
+    has_CAS  = str_detect(Genomes, "filt_CAS_"),
+    has_GTDB = str_detect(Genomes, "\\bGC[AF]_"), 
+    SC_origin = case_when(
+      has_CAS & has_GTDB  ~ "Both",
+      has_CAS & !has_GTDB ~ "CAS_only",
+      !has_CAS & has_GTDB ~ "GTDB_only")
+  )
+
+# quick check
+strain_sc %>% group_by(Cluster.With.CAS, SC_origin) %>% summarise(n = n())
+#   Cluster.With.CAS SC_origin     n
+# 1 FALSE            GTDB_only  1582
+# 2 TRUE             Both         25
+# 3 TRUE             CAS_only    121
+
+sc_counts <- strain_sc %>%
+  group_by(Species) %>%
+  summarise(
+    GTDB_SCs = sum(SC_origin %in% c("GTDB_only", "Both")),
+    CAS_SCs  = sum(SC_origin %in% c("CAS_only", "Both")),
+    CAS_SCs_added = sum(SC_origin == "CAS_only"),
+    Total_SCs_post = GTDB_SCs + CAS_SCs_added,
+    Increase_fold = round(Total_SCs_post / GTDB_SCs, 2),
+    .groups = "drop"
+  ) %>%
+  arrange(desc(Increase_fold))
+
+sc_counts
+#    Species                              GTDB_SCs CAS_SCs CAS_SCs_added Total_SCs_post Increase_fold
+#  1 Corynebacterium pseudodiphtheriticum       12      21            21             33          2.75
+#  2 Moraxella nonliquefaciens                   4       7             7             11          2.75
+#  3 Corynebacterium accolens                   11       9             9             20          1.82
+#  4 Dolosigranulum pigrum                      32      23            23             55          1.72
+#  5 Corynebacterium propinquum                 13       5             5             18          1.38
+#  6 Rothia sp902373285                          8       2             2             10          1.25
+#  7 Moraxella catarrhalis                     149      26            22            171          1.15
+#  8 Streptococcus mitis                       141      21            21            162          1.15
+#  9 Staphylococcus aureus                     152      15             3            155          1.02
+# 10 Streptococcus pneumoniae                  745      12             7            752          1.01
+# 11 Streptococcus agalactiae                  340       5             1            341          1   
+
+# Now we need to do the same for STs, but only for S. aureus and S. pneumoniae, to supplement the data 
+
+####
+# S. aureus
+####
+
+saureus <- read.csv("/12_CAS/6_ST/saureus_231_CAS_14959_public_ST_agr_spa_sccmec.csv")
+dim(saureus) # 15190 (makes sense, 14959+231)
+
+head(saureus, 2)
+#                  genome agr_group spa_type  ST clonal_complex sccmec CAS_or_public
+# 1 filt_CAS_0006_01_BLOO       gp1    t1541 101                  None           CAS
+# 2 filt_CAS_0006_02_BLOO       gp1    t1541 101                  None           CAS
+
+# Replace blanks in ST column with NA
+saureus$ST[saureus$ST == ""] <- NA
+
+# define ST sets
+gtdb_sts <- saureus %>% filter(CAS_or_public == "public", !is.na(ST)) %>% pull(ST) %>% unique()
+cas_sts <- saureus %>% filter(CAS_or_public == "CAS", !is.na(ST)) %>% pull(ST) %>% unique()
+
+# summarise counts
+saureus_st_counts <- tibble(
+  Species = "Staphylococcus aureus",
+  GTDB_STs = length(gtdb_sts),
+  CAS_STs = length(cas_sts),
+  CAS_STs_added = length(setdiff(cas_sts, gtdb_sts)),
+  Total_STs_post = GTDB_STs + CAS_STs_added,
+  Increase_fold = round(Total_STs_post / GTDB_STs, 2)
+)
+
+saureus_st_counts
+#   Species               GTDB_STs CAS_STs CAS_STs_added Total_STs_post Increase_fold
+# 1 Staphylococcus aureus      587      21             7            594          1.01
+
+####
+# S. pneumoniae
+####
+
+spneumoniae <- read.csv("/12_CAS/6_ST/spneumoniae_46_CAS_8895_public_mlst_capsular_serotype.csv")
+dim(spneumoniae) # 8941 (makes sense, 8895+46)
+
+head(spneumoniae, 2)
+#                          source_file  ST serotype
+# 1 GCA_000211095.1_ASM21109v1_genomic 306     <NA>
+# 2 GCA_000231945.2_ASM23194v2_genomic 649     <NA>
+
+spneumoniae$CAS_or_public <- ifelse(grepl("filt_CAS", spneumoniae$source_file), "CAS", "public")
+
+table(spneumoniae$CAS_or_public)
+  #  CAS public 
+  #   46   8895 
+
+# define ST sets
+gtdb_sts_sp <- spneumoniae %>% filter(CAS_or_public == "public", !is.na(ST)) %>% pull(ST) %>% unique()
+cas_sts_sp <- spneumoniae %>% filter(CAS_or_public == "CAS", !is.na(ST)) %>% pull(ST) %>% unique()
+
+# summarise counts
+spneumoniae_st_counts <- tibble(
+  Species = "Streptococcus pneumoniae",
+  GTDB_STs = length(gtdb_sts_sp),
+  CAS_STs = length(cas_sts_sp),
+  CAS_STs_added = length(setdiff(cas_sts_sp, gtdb_sts_sp)),
+  Total_STs_post = GTDB_STs + CAS_STs_added,
+  Increase_fold = round(Total_STs_post / GTDB_STs, 2)
+)
+
+spneumoniae_st_counts
+#   Species                  GTDB_STs CAS_STs CAS_STs_added Total_STs_post Increase_fold
+# 1 Streptococcus pneumoniae     1208      12             6           1214             1
+```
