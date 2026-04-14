@@ -5,7 +5,7 @@ The **Childhood Asthma Study (CAS)** is a longitudinal birth cohort. This reposi
 - **1,036 bacterial isolates** were cultured from NP plate sweeps across five selective media (BLOO, CHOC, COBA, HAEM, MORA)
 - **1,028 genomes** were assembled; **925** passed quality thresholds and were retained for analysis
 - Isolates were assigned to **6 genera / 72 species** using GTDB-Tk r214
-- **143 plate-sweep metagenomes** were processed with Kraken2/Bracken and StrainScan to compare strain detection with culture-based methods
+- **143 plate-sweep metagenomes** were processed with Kraken2/Bracken and StrainScan 
 - **11 dominant species** were profiled for strain-level dynamics using StrainScan
 
 ## Bioinformatics pipeline summary
