@@ -1,6 +1,6 @@
 ## Study overview
 
-The **Childhood Asthma Study (CAS)** is a longitudinal birth cohort. This repository contains all analysis code supporting the manuscript's characterisation of the nasopharyngeal (NP) microbiome in **58 infants** sampled at **2, 6, and 12 months of age**.
+The **Childhood Asthma Study (CAS)** is a longitudinal birth cohort. This repository contains analysis code supporting the manuscript's characterisation of the nasopharyngeal (NP) microbiome in **58 infants** sampled at **2, 6, and 12 months of age**.
 
 - **1,036 bacterial isolates** were cultured from NP plate sweeps across five selective media (BLOO, CHOC, COBA, HAEM, MORA)
 - **1,028 genomes** were assembled; **925** passed quality thresholds and were retained for analysis
