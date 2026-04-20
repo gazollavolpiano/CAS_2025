@@ -55,13 +55,6 @@ setdiff(isolates_data$Isolate, strains$Genomes) # no missing genomes from CAS
 isolates_data <- left_join(isolates_data, strains, by = c("Isolate" = "Genomes", "Species" = "Species")) %>% select(Species, Cluster.ID, Subject.ID, Sampling.Age)
 isolates_data$Existence.Evidence <- "CAS Isolate"
 head(isolates_data)
-#                 Species Cluster.ID Subject.ID Sampling.Age Existence.Evidence
-# 1 Staphylococcus aureus        C21   0003THCO            2        CAS Isolate
-# 2 Staphylococcus aureus        C21   0003THCO            2        CAS Isolate
-# 3 Staphylococcus aureus        C21   0003THCO            2        CAS Isolate
-# 4 Staphylococcus aureus        C21   0003THCO            2        CAS Isolate
-# 5 Staphylococcus aureus        C42   0007EVQU            2        CAS Isolate
-# 6    Rothia sp902373285        C10   0007EVQU            2        CAS Isolate
 
 # organize the data from plate sweeps metagenomes processed with strainscan and tidy it
 strains_sweeps <- read.csv("/2025/01_CAS/strain_scan/profile_plate_sweep/strain_scan_results_plate_sweep_11_databases.csv", header = TRUE, stringsAsFactors = FALSE) %>%
