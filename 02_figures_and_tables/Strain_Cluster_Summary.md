@@ -89,12 +89,12 @@ strains_sweeps$Existence.Evidence <- "Metagenome"
 
 head(strains_sweeps)
 #                    Species Cluster.ID Subject.ID Sampling.Age Existence.Evidence
-# 1 Corynebacterium accolens         C9   0039SABI            2         Metagenome
-# 2 Corynebacterium accolens        C17   0003THCO            6         Metagenome
-# 3 Corynebacterium accolens        C14   0017CAST            2         Metagenome
-# 4 Corynebacterium accolens        C17   0017CAST            2         Metagenome
-# 5 Corynebacterium accolens         C7   0078SAWA            2         Metagenome
-# 6 Corynebacterium accolens         C8   0137ELVA            2         Metagenome
+# 1 Corynebacterium accolens         C9   xxxxxxxx            2         Metagenome
+# 2 Corynebacterium accolens        C17   xxxxxxxx            6         Metagenome
+# 3 Corynebacterium accolens        C14   xxxxxxxx            2         Metagenome
+# 4 Corynebacterium accolens        C17   xxxxxxxx            2         Metagenome
+# 5 Corynebacterium accolens         C7   xxxxxxxx            2         Metagenome
+# 6 Corynebacterium accolens         C8   xxxxxxxx            2         Metagenome
 
 # union the data
 union_data <- rbind(isolates_data, strains_sweeps)
